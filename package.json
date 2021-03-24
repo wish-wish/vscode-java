@@ -5,13 +5,13 @@
   "author": "Red Hat",
   "icon": "icons/icon128.png",
   "license": "EPL-2.0",
-  "version": "0.75.0",
+  "version": "0.77.0",
   "publisher": "redhat",
   "bugs": "https://github.com/redhat-developer/vscode-java/issues",
   "preview": true,
   "enableProposedApi": false,
   "engines": {
-    "vscode": "^1.47.0"
+    "vscode": "^1.53.2"
   },
   "repository": {
     "type": "git",
@@ -52,6 +52,36 @@
         "description": "Style for modifier keywords."
       }
     ],
+    "semanticTokenModifiers": [
+      {
+        "id": "public",
+        "description": "Style for symbols with the public access modifier."
+      },
+      {
+        "id": "private",
+        "description": "Style for symbols with the private access modifier."
+      },
+      {
+        "id": "protected",
+        "description": "Style for symbols with the protected access modifier."
+      },
+      {
+        "id": "native",
+        "description": "Style for symbols with the native modifier."
+      },
+      {
+        "id": "generic",
+        "description": "Style for symbols that are generic (have type parameters)."
+      },
+      {
+        "id": "typeArgument",
+        "description": "Style for symbols that are type arguments for a generic symbol."
+      },
+      {
+        "id": "importDeclaration",
+        "description": "Style for symbols that are part of an import declaration."
+      }
+    ],
     "semanticTokenScopes": [
       {
         "language": "java",
@@ -65,6 +95,9 @@
           ],
           "modifier": [
             "storage.modifier.java"
+          ],
+          "keyword.documentation": [
+            "keyword.other.documentation.javadoc.java"
           ]
         }
       }
@@ -137,7 +170,7 @@
         "java.configuration.checkProjectSettingsExclusions": {
           "type": "boolean",
           "default": true,
-          "description": "Checks if the extension-generated project settings files (.project, .classpath, .factorypath, .settings/) should be excluded from the file explorer.",
+          "description": "Controls whether to exclude extension-generated project settings files (.project, .classpath, .factorypath, .settings/) from the file explorer.",
           "scope": "window"
         },
         "java.configuration.updateBuildConfiguration": {
@@ -321,6 +354,24 @@
           "additionalProperties": false,
           "scope": "window"
         },
+        "java.project.outputPath": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "markdownDescription": "A relative path to the workspace where stores the compiled output. `Only` effective in the `WORKSPACE` scope. The setting will `NOT` affect Maven or Gradle project.",
+          "default": "",
+          "scope": "window"
+        },
+        "java.project.sourcePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "Relative paths to the workspace where stores the source files. `Only` effective in the `WORKSPACE` scope. The setting will `NOT` affect Maven or Gradle project.",
+          "default": [],
+          "scope": "window"
+        },
         "java.contentProvider.preferred": {
           "type": "string",
           "description": "Preferred content provider (a 3rd party decompiler id, usually)",
@@ -339,6 +390,12 @@
           "description": "Max simultaneous project builds",
           "scope": "window",
           "minimum": 1
+        },
+        "java.recommendations.dependency.analytics.show": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the recommended Dependency Analytics extension.",
+          "scope": "window"
         },
         "java.completion.maxResults": {
           "type": "integer",
@@ -537,7 +594,8 @@
                   "JavaSE-12",
                   "JavaSE-13",
                   "JavaSE-14",
-                  "JavaSE-15"
+                  "JavaSE-15",
+                  "JavaSE-16"
                 ],
                 "description": "Java Execution Environment name. Must be unique."
               },
@@ -684,6 +742,18 @@
           "default": true,
           "description": "Include getter, setter and builder/constructor when finding references.",
           "scope": "window"
+        },
+        "java.references.includeDecompiledSources": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include the decompiled sources when finding references.",
+          "scope": "window"
+        },
+        "java.typeHierarchy.lazyLoad": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/disable lazy loading the content in type hierarchy. Lazy loading could save a lot of loading time but every type should be expanded manually to load its content.",
+          "scope": "window"
         }
       }
     },
@@ -767,6 +837,37 @@
         "command": "java.action.navigateToSuperImplementation",
         "title": "Go to Super Implementation",
         "category": "Java"
+      },
+      {
+        "command": "java.action.showTypeHierarchy",
+        "title": "Show Type Hierarchy",
+        "category": "Java"
+      },
+      {
+        "command": "java.action.showClassHierarchy",
+        "title": "Show Class Hierarchy",
+        "icon": "$(type-hierarchy)",
+        "enablement": "typeHierarchyDirection != both && typeHierarchySymbolKind != 10",
+        "category": "Java"
+      },
+      {
+        "command": "java.action.showSupertypeHierarchy",
+        "title": "Show Supertype Hierarchy",
+        "icon": "$(type-hierarchy-super)",
+        "enablement": "typeHierarchyDirection != parents",
+        "category": "Java"
+      },
+      {
+        "command": "java.action.showSubtypeHierarchy",
+        "title": "Show Subtype Hierarchy",
+        "icon": "$(type-hierarchy-sub)",
+        "enablement": "typeHierarchyDirection != children",
+        "category": "Java"
+      },
+      {
+        "command": "java.action.changeBaseType",
+        "title": "Base on this Type",
+        "category": "Java"
       }
     ],
     "keybindings": [
@@ -819,6 +920,11 @@
           "command": "java.action.navigateToSuperImplementation",
           "when": "javaLSReady && editorTextFocus && editorLangId == java",
           "group": "navigation@90"
+        },
+        {
+          "command": "java.action.showTypeHierarchy",
+          "when": "javaLSReady && editorTextFocus && editorLangId == java",
+          "group": "0_navigation@3"
         }
       ],
       "commandPalette": [
@@ -843,6 +949,26 @@
           "when": "javaLSReady"
         },
         {
+          "command": "java.action.showTypeHierarchy",
+          "when": "javaLSReady && editorIsOpen"
+        },
+        {
+          "command": "java.action.showClassHierarchy",
+          "when": "false"
+        },
+        {
+          "command": "java.action.showSubtypeHierarchy",
+          "when": "false"
+        },
+        {
+          "command": "java.action.showSupertypeHierarchy",
+          "when": "false"
+        },
+        {
+          "command": "java.action.changeBaseType",
+          "when": "false"
+        },
+        {
           "command": "java.project.updateSourceAttachment",
           "when": "false"
         },
@@ -861,6 +987,30 @@
         {
           "command": "java.server.mode.switch",
           "when": "java:serverMode == LightWeight"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "java.action.showClassHierarchy",
+          "group": "navigation@-1",
+          "when": "view == references-view.tree && reference-list.hasResult && reference-list.source == javaTypeHierarchy && typeHierarchySymbolKind != 10"
+        },
+        {
+          "command": "java.action.showSupertypeHierarchy",
+          "group": "navigation@0",
+          "when": "view == references-view.tree && reference-list.hasResult && reference-list.source == javaTypeHierarchy"
+        },
+        {
+          "command": "java.action.showSubtypeHierarchy",
+          "group": "navigation@1",
+          "when": "view == references-view.tree && reference-list.hasResult && reference-list.source == javaTypeHierarchy"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "java.action.changeBaseType",
+          "group": "1",
+          "when": "view == references-view.tree && reference-list.hasResult && reference-list.source == javaTypeHierarchy && viewItem != 'false'"
         }
       ]
     }
@@ -886,7 +1036,7 @@
     "@types/lodash.findindex": "^4.6.6",
     "@types/mocha": "^5.2.5",
     "@types/node": "^8.10.51",
-    "@types/vscode": "^1.47.0",
+    "@types/vscode": "^1.53.0",
     "@types/winreg": "^1.2.30",
     "@types/winston": "^2.4.4",
     "gulp": "^4.0.2",

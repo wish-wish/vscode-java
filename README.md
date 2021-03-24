@@ -20,7 +20,7 @@ Features
 =========
 ![ screencast ](https://raw.githubusercontent.com/redhat-developer/vscode-java/master/images/vscode-java.0.0.1.gif)
 
-* Supports code from Java 1.5 to Java 15
+* Supports code from Java 1.5 to Java 16
 * Maven pom.xml project support
 * Basic Gradle Java project support (Android not supported)
 * Standalone Java files support
@@ -42,6 +42,8 @@ Features
 * Annotation processing support (automatic for Maven projects)
 * Semantic selection
 * Diagnostic tags
+* Call Hierarchy
+* Type Hierarchy
 
 Please note that [Gradle-based Android projects are not supported](https://github.com/redhat-developer/vscode-java/issues/10#issuecomment-268834749).
 
@@ -74,8 +76,8 @@ If you need to compile your projects against a different JDK version, it's recom
     "path": "/path/to/jdk-11",
   },
   {
-    "name": "JavaSE-15",
-    "path": "/path/to/jdk-15",
+    "name": "JavaSE-16",
+    "path": "/path/to/jdk-16",
     "default": true
   },
 ]
@@ -111,7 +113,7 @@ The following settings are supported:
 * `java.trace.server` : Traces the communication between VS Code and the Java language server.
 * `java.configuration.updateBuildConfiguration` : Specifies how modifications on build files update the Java classpath/configuration. Supported values are `disabled` (nothing happens), `interactive` (asks about updating on every modification), `automatic` (updating is automatically triggered).
 * `java.configuration.maven.userSettings` : Path to Maven's user settings.xml.
-* `java.configuration.checkProjectSettingsExclusions`: Checks if the extension-generated project settings files (`.project`, `.classpath`, `.factorypath`, `.settings/`) should be excluded from the file explorer. Defaults to `true`.
+* `java.configuration.checkProjectSettingsExclusions`: Controls whether to exclude extension-generated project settings files (`.project`, `.classpath`, `.factorypath`, `.settings/`) from the file explorer. Defaults to `true`.
 * `java.referencesCodeLens.enabled` : Enable/disable the references code lenses.
 * `java.implementationsCodeLens.enabled` : Enable/disable the implementations code lenses.
 * `java.signatureHelp.enabled` : Enable/disable signature help support (triggered on `(`).
@@ -155,6 +157,7 @@ The following settings are supported:
 * `java.codeGeneration.toString.limitElements`: Limit number of items in arrays/collections/maps to list, if 0 then list all. Defaults to `0`.
 * `java.selectionRange.enabled`: Enable/disable Smart Selection support for Java. Disabling this option will not affect the VS Code built-in word-based and bracket-based smart selection.
 * `java.showBuildStatusOnStart.enabled`: Automatically show build status on startup. Defaults to `false`.
+* `java.project.outputPath`: A relative path to the workspace where stores the compiled output. `Only` effective in the `WORKSPACE` scope. The setting will `NOT` affect Maven or Gradle project.
 * `java.project.referencedLibraries`: Configure glob patterns for referencing local libraries to a Java project.
 * `java.completion.maxResults`: Maximum number of completion results (not including snippets). `0` (the default value) disables the limit, all results are returned. In case of performance problems, consider setting a sensible limit..
 * `java.configuration.runtimes`: Map Java Execution Environments to local JDKs.
@@ -181,10 +184,13 @@ The following settings are supported:
 * `java.templates.typeComment`: Specifies the type comment for new Java type. Supports configuring multi-line comments with an array of strings, and using ${variable} to reference the [predefined variables](https://github.com/redhat-developer/vscode-java/wiki/Predefined-Variables-for-Java-Template-Snippets).
 * `java.references.includeAccessors`: Include getter, setter and builder/constructor when finding references. Default to true.
 * `java.configuration.maven.globalSettings` : Path to Maven's global settings.xml.
-
-New in 0.74.0:
 * `java.eclipse.downloadSources` : Enable/disable download of Maven source artifacts for Eclipse projects.
+* `java.recommendations.dependency.analytics.show` : Show the recommended Dependency Analytics extension.
 
+New in 0.77.0:
+* `java.references.includeDecompiledSources` : Include the decompiled sources when finding references. Default to true.
+* `java.project.sourcePaths`: Relative paths to the workspace where stores the source files. `Only` effective in the `WORKSPACE` scope. The setting will `NOT` affect Maven or Gradle project.
+* `java.typeHierarchy.lazyLoad` : Enable/disable lazy loading the content in type hierarchy. Lazy loading could save a lot of loading time but every type should be expanded manually to load its content.
 
 Semantic Highlighting
 ===============
