@@ -49,7 +49,7 @@ function prepareParams(requirements: RequirementsData, javaConfiguration, worksp
 		// suspend=y is the default. Use this form if you need to debug the server startup code:
 		//  params.push('-agentlib:jdwp=transport=dt_socket,server=y,address=1044');
 	}
-	if (requirements.java_version >= 8) {
+	if ( requirements.java_version >= 8 ) {
 		params.push('--add-modules=ALL-SYSTEM',
 					'--add-opens',
 					'java.base/java.util=ALL-UNNAMED',
